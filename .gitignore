@@ -1,0 +1,16 @@
+node_modules/
+dist/
+coverage/
+*.log
+
+# segredos — nunca versionar (só o .env.example)
+.env
+.env.*
+!.env.example
+
+# segredos de deploy gerados na VPS (nunca no repo)
+api.env
+infisical-identity.env
+
+# rascunho do CLI do Supabase (aparece ao consultar o projeto remoto)
+supabase/.temp/

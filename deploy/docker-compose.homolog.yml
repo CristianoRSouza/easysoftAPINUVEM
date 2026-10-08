@@ -1,0 +1,48 @@
+# Stack de HOMOLOGAÇÃO da EasyFoodAPI — roda na VPS em /root/stack/easyfood-api-homolog/
+# (como docker-compose.yml). Mesma imagem da produção: só o api.env (cofre) muda.
+#
+# POR QUE EXISTE
+# Até 30/09/2026 a API de homologação só existia em http://localhost:3010 no PC de
+# desenvolvimento. Toda loja de teste instalada em OUTRA rede ficava com `fetch failed`
+# em provision, push, pull e upload do PFX, e, por consequência, sem usuários no POS.
+# O worker cloud-apply de homolog também não alcançava a API, então o acervo de XML
+# fiscal ficava desligado.
+#
+# TRAVA DE AMBIENTE
+# O entrypoint abaixo recusa subir se DATABASE_URL ou SUPABASE_URL não forem do projeto
+# de homologação (ltixkslqlreybdhutpbr). Reusar o cofre de produção aqui faria a
+# "homologação" escrever em produção sem nenhum erro visível: é o mesmo defeito de
+# classe do worker que drenava produção achando que era homolog (18/09/2026).
+services:
+  api:
+    image: ${API_IMAGE}:${API_TAG}
+    container_name: easyfood-api-homolog
+    env_file: api.env          # gerado do cofre Infisical DE HOMOLOGAÇÃO por ./refresh-env.sh
+    restart: unless-stopped
+    entrypoint:
+      - /bin/sh
+      - -c
+      - |
+        for v in "$$DATABASE_URL" "$$SUPABASE_URL"; do
+          case "$$v" in
+            *ltixkslqlreybdhutpbr*) ;;
+            *) echo "ABORTADO: DATABASE_URL/SUPABASE_URL não são do homolog (ltixkslqlreybdhutpbr). Confira o cofre." >&2; exit 78 ;;
+          esac
+        done
+        exec node dist/main.js
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3010/api/v1/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  edge:
+    external: true            # rede compartilhada do Caddy edge (já existe na VPS)

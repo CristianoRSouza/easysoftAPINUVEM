@@ -1,0 +1,52 @@
+{
+  "name": "easyfood-api",
+  "version": "0.1.0",
+  "private": true,
+  "description": "API central do EasyFood (3 camadas, template EasyML) — única porta do Supabase cloud",
+  "license": "UNLICENSED",
+  "scripts": {
+    "build": "nest build",
+    "dev": "nest start --watch",
+    "start": "node dist/main.js",
+    "start:logged": "node scripts/run-with-log.cjs",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint \"src/**/*.ts\"",
+    "test": "vitest run",
+    "contract:check": "nest build && node scripts/contrato-http.mjs",
+    "contract:update": "nest build && node scripts/contrato-http.mjs --atualizar"
+  },
+  "dependencies": {
+    "@nestjs/common": "^11.2.3",
+    "@nestjs/core": "^11.2.3",
+    "@nestjs/platform-express": "^11.2.3",
+    "@nestjs/swagger": "^11.4.7",
+    "@nestjs/throttler": "^6.5.0",
+    "@supabase/supabase-js": "^2.45.4",
+    "cookie-parser": "^1.4.7",
+    "dotenv": "^16.4.5",
+    "fflate": "^0.8.3",
+    "helmet": "^7.1.0",
+    "multer": "^2.2.0",
+    "pg": "^8.13.0",
+    "reflect-metadata": "^0.2.2",
+    "rxjs": "^7.8.1",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.39.5",
+    "@nestjs/cli": "^11.0.24",
+    "@nestjs/schematics": "^11.1.0",
+    "@types/cookie-parser": "^1.4.7",
+    "@types/express": "^4.17.21",
+    "@types/multer": "^2.2.0",
+    "@types/node": "^22.7.4",
+    "@types/pg": "^8.11.10",
+    "eslint": "^9.39.5",
+    "typescript": "^5.6.2",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^4.1.11"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

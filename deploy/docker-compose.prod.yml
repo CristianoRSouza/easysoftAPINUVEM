@@ -1,0 +1,37 @@
+# Stack de PRODUÇÃO da EasyFoodAPI — roda na VPS em /root/stack/easyfood-api/
+# NÃO builda: puxa a imagem publicada no Docker Hub por tag (o GitHub Actions troca a tag no .env).
+# API standalone: o Caddy "edge" compartilhado faz reverse_proxy direto pra este container
+# (sem web/nginx no meio, ao contrário do EasyML). Por isso o container fica na rede `edge`
+# e NÃO publica portas (o edge é dono da :80/:443).
+services:
+  api:
+    image: ${API_IMAGE}:${API_TAG}
+    container_name: easyfood-api
+    env_file: api.env          # gerado do cofre Infisical por ./refresh-env.sh (chmod 600)
+    restart: unless-stopped
+    networks:
+      - edge
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://localhost:3010/api/v1/health/live').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    # Retenção do log do container. SEM ISTO o Docker usa o driver `json-file` com
+    # tamanho ILIMITADO: o arquivo em /var/lib/docker/containers cresce até encher o
+    # disco da VPS — e aí não cai só a API, cai tudo que estiver na máquina.
+    #
+    # Ninguém olha essa pasta até o disco acabar. É o mesmo defeito que deixou 638 MB de
+    # log num serviço de loja, só que aqui o estrago é compartilhado.
+    #
+    # 30 MB (3 × 10) é a janela útil para investigar um chamado; o histórico longo, se um
+    # dia for preciso, é trabalho de agregador, não do arquivo local.
+    # @see docs/PADRAO-LOGS.md §5
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+networks:
+  edge:
+    external: true            # rede compartilhada do Caddy edge (já existe na VPS)

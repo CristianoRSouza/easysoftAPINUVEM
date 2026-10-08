@@ -1,0 +1,59 @@
+# Smoke local: sobe a API a partir do .env. Em produção, o env vem do cofre (Infisical),
+# não deste arquivo — ver README (padrão EasyML: api.env gerado do cofre).
+services:
+  easyfood-api:
+    build: .
+    env_file: .env
+    ports:
+      - "3010:3010"
+    restart: unless-stopped
+    healthcheck:
+      # Usa `node`, não `wget`/`curl`: a imagem é `node:22-slim` (Debian slim) e não
+      # traz nenhum dos dois. O teste anterior falhava com
+      #   exec: "wget": executable file not found in $PATH
+      # em TODA execução — o container ficava marcado `unhealthy` para sempre mesmo
+      # respondendo 200. Pior que healthcheck nenhum: um `unhealthy` permanente
+      # dessensibiliza para o dia em que a API cair de verdade, e trava qualquer
+      # `depends_on: condition: service_healthy` que venha a apontar para cá.
+      #
+      # Porta e prefixo saem do ambiente (não fixos), para o teste continuar válido
+      # se `PORT`/`API_PREFIX` mudarem. Concatenação em vez de template string
+      # porque `${...}` seria interpolado pelo Compose antes de chegar ao Node.
+      test:
+        - CMD
+        - node
+        - -e
+        - 'const p=process.env.PORT||3010;const x=process.env.API_PREFIX||"api/v1";fetch("http://127.0.0.1:"+p+"/"+x+"/health/live").then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))'
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      # O Nest leva ~10s para mapear as rotas e abrir a porta. Sem isto, as tentativas
+      # do arranque contam para o limite de `retries` e o container pode ser dado como
+      # doente antes de ter tido chance de subir.
+      start_period: 30s
+    # Mesma retenção da produção (ver deploy/docker-compose.prod.yml). Sem isto o Docker
+    # não limita o tamanho do log do container e o arquivo cresce até encher o disco.
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # ── Teto de memória e CPU ────────────────────────────────────────────────────
+    #
+    # Sem isto o container herda TODA a memória da máquina, e um processo Node que
+    # dispara (resposta grande demais, vazamento, laço) leva o host junto — banco,
+    # front e qualquer outra coisa que esteja rodando ali.
+    #
+    # Com o teto, o kernel mata só este container. A API reinicia sozinha
+    # (`restart: unless-stopped`) e o resto da máquina segue de pé. Trocar
+    # "tudo cai" por "um serviço reinicia" é o ponto.
+    #
+    # 512 MB é folgado para esta API — o processo em regime usa dezenas de MB. Se
+    # bater no teto, é sinal de problema real, não de limite apertado demais.
+    mem_limit: 512m
+    cpus: 1.5
+    # Cinto extra: mesmo dentro do limite do container, o heap do V8 cresceria até o
+    # padrão do Node. Este valor mantém margem para o resto do processo (buffers,
+    # pilha nativa) antes de o kernel precisar intervir.
+    environment:
+      NODE_OPTIONS: "--max-old-space-size=384"

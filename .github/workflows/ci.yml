@@ -1,0 +1,214 @@
+name: CI/CD
+
+# Esteira: feature/* --PR--> hom (deploy HOMOLOGAÇÃO) --PR--> main (deploy PRODUÇÃO).
+#
+# A produção NÃO recompila. A imagem é identificada pela árvore do código
+# (`git rev-parse HEAD^{tree}`): o merge hom -> main gera um commit novo, mas com a
+# MESMA árvore que foi testada em homologação, e o deploy de produção só promove essa
+# imagem. Se a árvore da main não tiver passado pela hom, não existe imagem para ela e o
+# deploy de produção FALHA. Esse é o ponto: produção roda exatamente o binário testado.
+#
+# Sem "branch em dia" (strict) na main, e sem realinhar hom: se a main só recebe merges da
+# hom, os commits de merge dela não trazem código próprio, e o próximo merge hom -> main
+# produz exatamente a árvore da hom. Um commit direto na main quebra essa igualdade e o
+# deploy de produção falha até esse código voltar pela hom. (Realinhar hom pelo CI não é
+# possível: repo pessoal não aceita o GitHub Actions como bypass de ruleset.)
+#
+# Saída de emergência (merge de admin direto na main): Actions -> CI/CD -> Run workflow
+# na main com `emergencia=true`. Compila da main e publica na produção sem passar pela hom.
+
+on:
+  push:
+    branches: [main, hom]
+  pull_request:
+  workflow_dispatch:
+    inputs:
+      emergencia:
+        description: "Compilar da main e publicar na PRODUÇÃO sem passar pela homologação"
+        type: boolean
+        default: false
+
+# Não cancela deploy em andamento (evita a VPS com tag inconsistente).
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+env:
+  IMAGE: easysoftsistemas/easyfood-api
+  VPS_HOST: gate.paas.saveincloud.net.br
+  VPS_USER: 270104-26675
+  VPS_PORT: "3022"
+  STACK: /root/stack/easyfood-api
+  HEALTH_URL: https://easyfood-api.easysoftcloud.com.br/api/v1/health/live
+  STACK_HOMOLOG: /root/stack/easyfood-api-homolog
+  HEALTH_URL_HOMOLOG: https://easyfood-api-homolog.easysoftcloud.com.br/api/v1/health/live
+
+jobs:
+  build-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm run build
+      - run: npm test
+
+  docker-build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Valida que a imagem builda
+        run: docker build -t easyfood-api:ci .
+
+  # Checagem obrigatória na main (ruleset): PR para a main só pode vir de `hom`.
+  # Roda em todo evento e só reprova PR com base main e origem diferente de hom — assim
+  # o check sempre existe (um job pulado não satisfaz a regra de forma confiável).
+  origem-e-hom:
+    runs-on: ubuntu-latest
+    steps:
+      - name: PR para main precisa vir de hom
+        env:
+          BASE: ${{ github.base_ref }}
+          HEAD: ${{ github.head_ref }}
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ] && [ "$BASE" = "main" ] && [ "$HEAD" != "hom" ]; then
+            echo "::error::PR para main só pode vir de 'hom' (origem: '$HEAD'). Abra o PR para 'hom' e promova depois."
+            exit 1
+          fi
+          echo "ok (evento=${{ github.event_name }} base='$BASE' origem='$HEAD')"
+
+  # push em hom: compila, publica a imagem pela árvore do código e sobe a HOMOLOGAÇÃO.
+  deploy-homolog:
+    needs: [build-test, docker-build]
+    if: github.ref == 'refs/heads/hom' && github.event_name == 'push'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Identidade da imagem (árvore do código)
+        id: tree
+        run: echo "tag=t-$(git rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v4
+        with:
+          username: neanderalmeida
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      # driver docker-container: necessário p/ exportar o cache type=gha
+      - uses: docker/setup-buildx-action@v4
+      - uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          build-args: |
+            BUILD_ID=${{ steps.tree.outputs.tag }}
+          tags: |
+            ${{ env.IMAGE }}:${{ steps.tree.outputs.tag }}
+            ${{ env.IMAGE }}:hom-v${{ github.run_number }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Deploy HOMOLOGAÇÃO por SSH na VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.VPS_HOST }}
+          username: ${{ env.VPS_USER }}
+          port: ${{ env.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # NUNCA `cat` o api.env aqui — o Actions só mascara secrets do repo; o resto vazaria.
+          script: |
+            set -e
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u neanderalmeida --password-stdin
+            sed -i "s/^API_TAG=.*/API_TAG=${{ steps.tree.outputs.tag }}/" ${{ env.STACK_HOMOLOG }}/.env
+            # Namespace do Docker Hub migrou para a organizacao easysoftsistemas: corrige a
+            # stack da VPS que ainda aponte para o antigo (idempotente: sem match, nao muda nada).
+            sed -i 's#neanderalmeida/#easysoftsistemas/#g' ${{ env.STACK_HOMOLOG }}/.env ${{ env.STACK_HOMOLOG }}/docker-compose.yml
+            grep '^API_TAG=' ${{ env.STACK_HOMOLOG }}/.env
+            docker compose -f ${{ env.STACK_HOMOLOG }}/docker-compose.yml pull
+            # Segredos do cofre de HOMOLOG antes de subir (mesma razão do deploy de produção).
+            ${{ env.STACK_HOMOLOG }}/refresh-env.sh
+            docker compose -f ${{ env.STACK_HOMOLOG }}/docker-compose.yml up -d
+            docker image prune -af
+            sleep 5
+            curl -sSf ${{ env.HEALTH_URL_HOMOLOG }} && echo "  <- health homolog OK"
+
+  # push em main: NÃO compila — promove a imagem que passou pela homologação.
+  # workflow_dispatch com emergencia=true: compila da main (saída de emergência).
+  deploy-producao:
+    needs: [build-test, docker-build]
+    if: >-
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' ||
+       (github.event_name == 'workflow_dispatch' && inputs.emergencia))
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Identidade da imagem (árvore do código)
+        id: tree
+        run: echo "tag=t-$(git rev-parse HEAD^{tree})" >> "$GITHUB_OUTPUT"
+      - uses: docker/login-action@v4
+        with:
+          username: neanderalmeida
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - uses: docker/setup-buildx-action@v4
+      - name: Promover a imagem testada em homologação
+        if: github.event_name == 'push'
+        run: |
+          SRC="${{ env.IMAGE }}:${{ steps.tree.outputs.tag }}"
+          if ! docker buildx imagetools inspect "$SRC" > /dev/null 2>&1; then
+            echo "::error::Não há imagem de homologação para este código ($SRC). A main recebeu código que não passou pela hom. Promova via PR hom -> main, ou use Run workflow com emergencia=true."
+            exit 1
+          fi
+          docker buildx imagetools create \
+            -t ${{ env.IMAGE }}:v${{ github.run_number }} \
+            -t ${{ env.IMAGE }}:latest \
+            "$SRC"
+          echo "promovida $SRC -> v${{ github.run_number }}"
+      - name: EMERGÊNCIA — compilar da main
+        if: github.event_name == 'workflow_dispatch'
+        uses: docker/build-push-action@v7
+        with:
+          context: .
+          push: true
+          build-args: |
+            BUILD_ID=emergencia-v${{ github.run_number }}
+          tags: |
+            ${{ env.IMAGE }}:v${{ github.run_number }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Deploy PRODUÇÃO por SSH na VPS
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ env.VPS_HOST }}
+          username: ${{ env.VPS_USER }}
+          port: ${{ env.VPS_PORT }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          # NUNCA `cat` o api.env aqui — o Actions só mascara secrets do repo; o resto vazaria.
+          script: |
+            set -e
+            echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u neanderalmeida --password-stdin
+            sed -i "s/^API_TAG=.*/API_TAG=v${{ github.run_number }}/" ${{ env.STACK }}/.env
+            # Namespace do Docker Hub migrou para a organizacao easysoftsistemas: corrige a
+            # stack da VPS que ainda aponte para o antigo (idempotente: sem match, nao muda nada).
+            sed -i 's#neanderalmeida/#easysoftsistemas/#g' ${{ env.STACK }}/.env ${{ env.STACK }}/docker-compose.yml
+            grep '^API_TAG=' ${{ env.STACK }}/.env
+            docker compose -f ${{ env.STACK }}/docker-compose.yml pull
+            # Segredos: regenera o api.env a partir do cofre ANTES de subir. Sem este passo,
+            # cadastrar um segredo no Infisical so chegava ao servidor quando alguem lembrava
+            # de rodar o refresh a mao — foi assim que o SSO_SHARED_SECRET e o
+            # ERROR_REPORT_SECRET ficaram fora do servidor e as duas funcionalidades morreram
+            # em silencio ate 31/07/2026.
+            # Falha aqui DERRUBA o deploy de proposito: o script aborta preservando o api.env
+            # atual, entao cofre fora do ar = "pode faltar segredo pro codigo novo". Melhor
+            # deploy vermelho que servidor com ambiente defasado e ninguem sabendo.
+            #
+            # O `up -d` abaixo NAO usa --force-recreate: o refresh termina com `up -d` e o
+            # compose JA recria quando o api.env muda (medido no deploy 30664676474, que
+            # recriou o container duas vezes justamente por causa do force redundante).
+            ${{ env.STACK }}/refresh-env.sh
+            docker compose -f ${{ env.STACK }}/docker-compose.yml up -d
+            docker image prune -af
+            sleep 5
+            curl -sSf ${{ env.HEALTH_URL }} && echo "  <- health OK"

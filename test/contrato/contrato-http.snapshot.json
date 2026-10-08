@@ -1,0 +1,662 @@
+{
+  "globais": [
+    "APP_GUARD → SessionThrottlerGuard",
+    "APP_GUARD → AuthGuard",
+    "APP_GUARD → TenantGuard",
+    "APP_FILTER → HttpExceptionFilter"
+  ],
+  "rotas": [
+    {
+      "rota": "DELETE /ai/sessions",
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "DELETE /ai/sessions/:sessionId",
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /ai/sessions",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /audit-logs",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /auth/me",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /billing/credits",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /billing/license",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /billing/plan-window",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /billing/plans",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /billing/usage",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /cbs/:key",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /cbs/municipality-by-uf",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /cbs/municipality-with-rate-by-uf",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /cbs/open-dataset-version",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /cbs/product-fiscal-ibscbs",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /dashboard/revenue-approved",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /dashboard/stats",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /dashboard/sync-by-hour",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /dashboard/transactions-by-day",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /health",
+      "isPublic": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /health/build",
+      "isServiceOnly": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /health/live",
+      "isPublic": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /me/all-stores",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /me/context",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /me/stores",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/acbr-config",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/attention-counts",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/issuer-config",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes/:noteId",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes/:noteId/events",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes/:noteId/items",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes/:noteId/logs",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes/:noteId/payments",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/notes/:noteId/xml/:kind",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/totals",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /nfce/xml-archive",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /order-items",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /orders",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /pixnopdv-store-credentials",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /product-images",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /products",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /products/:productId/fiscal",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /products/paged",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /service-agents",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /service-agents/:agentId/audit-logs",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/active-retries",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/apply-rate",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/backlog",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/by-entity",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/failures-by-error",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/recent-all",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/recent-applied",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/recent-failures",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/inbox/summary",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/active-retries",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/backlog",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/by-entity",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/dispatch-rate",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/failures-by-error",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/pending",
+      "isServiceOnly": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/recent-all",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/recent-failures",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /sync/outbox/summary",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /totem-available-licenses",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /totem-licenses",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /totems",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /totems/:totemId/audit-logs",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /transactions",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "GET /units",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "PATCH /service-agents/:agentId",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "PATCH /service-agents/:agentId/active",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "PATCH /totems/:totemId",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "PATCH /totems/:totemId/active",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /ai/chat",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /auth/derived-session",
+      "isSkipTenant": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /auth/login",
+      "isPublic": true,
+      "isSkipTenant": true,
+      "throttle": {
+        "THROTTLER:TTLdefault": 60000,
+        "THROTTLER:LIMITdefault": 10
+      },
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /auth/logout",
+      "isPublic": true,
+      "isSkipTenant": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /auth/recovery-email",
+      "isPublic": true,
+      "isSkipTenant": true,
+      "throttle": {
+        "THROTTLER:TTLdefault": 60000,
+        "THROTTLER:LIMITdefault": 10
+      },
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /auth/sso/support",
+      "isSkipTenant": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /service-agents",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /storage/fiscal-xml",
+      "isServiceOnly": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": [
+        "mixin"
+      ]
+    },
+    {
+      "rota": "POST /storage/nfce-certificates",
+      "isServiceOnly": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": [
+        "mixin"
+      ]
+    },
+    {
+      "rota": "POST /storage/product-images",
+      "isServiceOnly": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": [
+        "mixin"
+      ]
+    },
+    {
+      "rota": "POST /stores/:storeId/bootstrap-code",
+      "isSkipTenant": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /sync/inbox",
+      "isServiceOnly": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /sync/outbox/dispatched",
+      "isServiceOnly": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /telemetry/error-report",
+      "isSkipTenant": true,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /tenants/provision",
+      "isServiceOnly": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /totems",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /totems/:totemId/requeue-cloud-sync",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "POST /totems/tef-secrets/encrypt",
+      "isSkipTenant": true,
+      "httpCode": 200,
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "PUT /ai/sessions/today",
+      "guards": [],
+      "interceptors": []
+    },
+    {
+      "rota": "PUT /pixnopdv-store-credentials",
+      "requiresStore": true,
+      "guards": [],
+      "interceptors": []
+    }
+  ],
+  "openapi": {
+    "paths": {
+      "/ai/chat": "2ac9f1c0a5585442",
+      "/ai/sessions": "7f81a50ec57ac8ef",
+      "/ai/sessions/today": "1b78b1ba25526cc1",
+      "/ai/sessions/{sessionId}": "1a393ccdd930561a",
+      "/audit-logs": "feb3b620c1ea3f15",
+      "/auth/derived-session": "01161ae4bf22b0cf",
+      "/auth/login": "0e833e7c7ccdba53",
+      "/auth/logout": "bdf1e427f353a7f9",
+      "/auth/me": "20c33527dc1352f2",
+      "/auth/recovery-email": "627ef62618c86ca0",
+      "/auth/sso/support": "477b36341562840e",
+      "/billing/credits": "dab339d9a56d1518",
+      "/billing/license": "16d22a337f8352c7",
+      "/billing/plan-window": "9a497509c016110d",
+      "/billing/plans": "6e2047e958950ef5",
+      "/billing/usage": "1786082f11f95817",
+      "/cbs/municipality-by-uf": "e058a2db5c0eab1f",
+      "/cbs/municipality-with-rate-by-uf": "5afad010678e5cb0",
+      "/cbs/open-dataset-version": "75018c381d54f37a",
+      "/cbs/product-fiscal-ibscbs": "49b9d3926d6069cb",
+      "/cbs/{key}": "02e1a6c10d893aab",
+      "/dashboard/revenue-approved": "b601b9e923ca9ac9",
+      "/dashboard/stats": "b84f99a8ca129c56",
+      "/dashboard/sync-by-hour": "db9e1e436d3cff96",
+      "/dashboard/transactions-by-day": "2545ecac5b286195",
+      "/health": "5caa639e1ff557ee",
+      "/health/build": "7d1c8141d04633d1",
+      "/health/live": "5083981d6e35e2a0",
+      "/me/all-stores": "5dd935304955f17e",
+      "/me/context": "b95d707eede3dbb6",
+      "/me/stores": "e2f90b310b831c58",
+      "/nfce/acbr-config": "a8978150c2f7586f",
+      "/nfce/attention-counts": "fe3b561d58bb2dfd",
+      "/nfce/issuer-config": "782902118fa57309",
+      "/nfce/notes": "e72598ac8435e7f4",
+      "/nfce/notes/{noteId}": "3d81ffe468e26e9b",
+      "/nfce/notes/{noteId}/events": "a7db57ece58a1295",
+      "/nfce/notes/{noteId}/items": "6def3b080403eb46",
+      "/nfce/notes/{noteId}/logs": "ce52fc9392a693c3",
+      "/nfce/notes/{noteId}/payments": "e9588337bc25243c",
+      "/nfce/notes/{noteId}/xml/{kind}": "c8f5b8e5ff7d8e01",
+      "/nfce/totals": "2c2d79d7ea6de9a8",
+      "/nfce/xml-archive": "b58e3be2ecd557c6",
+      "/order-items": "8f9321eb6384008d",
+      "/orders": "c6c14d6035c17b08",
+      "/pixnopdv-store-credentials": "bc19f161ef84b320",
+      "/product-images": "f03ed81fc7b2c920",
+      "/products": "dbe5a5a457d34474",
+      "/products/paged": "bcde9d64ddd62bd8",
+      "/products/{productId}/fiscal": "59416f2f2370d093",
+      "/service-agents": "21d50a34e6f46c7a",
+      "/service-agents/{agentId}": "cdb874aa2ba10eaa",
+      "/service-agents/{agentId}/active": "b10287469b4dc2a4",
+      "/service-agents/{agentId}/audit-logs": "8908c60cb1a8132c",
+      "/storage/fiscal-xml": "7322d49c0f3a4a4d",
+      "/storage/nfce-certificates": "069f839fe728d0c0",
+      "/storage/product-images": "8aceefff15f08c32",
+      "/stores/{storeId}/bootstrap-code": "042daca6d957e80f",
+      "/sync/inbox": "6b0b6c495c67f075",
+      "/sync/inbox/active-retries": "038f5b70d0563bb1",
+      "/sync/inbox/apply-rate": "67257f05b4e440b4",
+      "/sync/inbox/backlog": "c77b58f6f1d100a6",
+      "/sync/inbox/by-entity": "2c9c837892fe21fc",
+      "/sync/inbox/failures-by-error": "eee78f05f58ba852",
+      "/sync/inbox/recent-all": "9632be2f9656029b",
+      "/sync/inbox/recent-applied": "9a9279ba8f43b4ab",
+      "/sync/inbox/recent-failures": "e4a94f7d01ff1a33",
+      "/sync/inbox/summary": "e7cb9e5f03c69431",
+      "/sync/outbox/active-retries": "eb52a176f711d7ab",
+      "/sync/outbox/backlog": "2754b2838821a865",
+      "/sync/outbox/by-entity": "7cbd2d78f6a23d15",
+      "/sync/outbox/dispatch-rate": "cda281fb6125929d",
+      "/sync/outbox/dispatched": "afcb08e3bea14ff4",
+      "/sync/outbox/failures-by-error": "3fb1bdb6ab797912",
+      "/sync/outbox/pending": "1e6fd80c6eae329e",
+      "/sync/outbox/recent-all": "338a52fcd25edfce",
+      "/sync/outbox/recent-failures": "bdd34237878b0db5",
+      "/sync/outbox/summary": "e53c8ba3e12f3364",
+      "/telemetry/error-report": "d783e255d49341a0",
+      "/tenants/provision": "b93f044d53401852",
+      "/totem-available-licenses": "1606e53874fefca8",
+      "/totem-licenses": "c62ddd10629fe683",
+      "/totems": "95baece2e5b98471",
+      "/totems/tef-secrets/encrypt": "c4a01e544b27806e",
+      "/totems/{totemId}": "256e059b9905805d",
+      "/totems/{totemId}/active": "89848ff95c980c01",
+      "/totems/{totemId}/audit-logs": "5e3ec32cda949142",
+      "/totems/{totemId}/requeue-cloud-sync": "18cbb26f28542dfd",
+      "/transactions": "4758cc2f56796d0d",
+      "/units": "6c900f6ea54c9547"
+    },
+    "schemas": "44136fa355b3678a",
+    "tags": []
+  }
+}
